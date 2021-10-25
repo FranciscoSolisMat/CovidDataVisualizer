@@ -96,8 +96,8 @@
         countriesSelection.onchange = () => {
             setup(countriesSelection.value);
         }
-        const loadTranslations = (lang) => {
-            axios.get('i18n/' + lang + '.json').then(res => {
+        const loadTranslations = async (lang) => {
+            await axios.get('i18n/' + lang + '.json').then(res => {
                 window.translations = res.data;
                 window.title = window.translations['title']
                 // Retrieve all elements that contains the attribute 'translation'
@@ -114,11 +114,11 @@
                     }
                 }
             }).catch(err => {
-                loadTranslations('en');
+                loadTranslations('en'); 
             });
         }
 
-        loadTranslations(lang);
+        await loadTranslations(lang);
 
         const setup = (country) => {
             countriesSelection.disabled = true;
