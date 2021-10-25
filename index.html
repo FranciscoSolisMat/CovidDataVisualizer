@@ -96,8 +96,8 @@
         countriesSelection.onchange = () => {
             setup(countriesSelection.value);
         }
-        const loadTranslations = async (lang) => {
-            await axios.get('i18n/' + lang + '.json').then(res => {
+        const loadTranslations = (lang, callback) => {
+            axios.get('i18n/' + lang + '.json').then(res => {
                 window.translations = res.data;
                 window.title = window.translations['title']
                 // Retrieve all elements that contains the attribute 'translation'
@@ -113,12 +113,13 @@
                         elements[i].innerText = translationValue;
                     }
                 }
+                if(callback) {
+                    callback()
+                }
             }).catch(err => {
                 loadTranslations('en'); 
             });
         }
-
-        await loadTranslations(lang);
 
         const setup = (country) => {
             countriesSelection.disabled = true;
@@ -288,31 +289,33 @@
             countriesSelection.disabled = false;
         };     
 
-        Papa.parse('https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv', {
-            encodingg: 'utf8',
-            download: true,
-            header: true,
-            delimiter: ',',
-            complete: (results, file) => {
-                if(results.data){
-                    allData = results.data.filter(item => item.Country !== undefined);
-                    const countries = []
-                    allData.forEach(item => {
-                        if(!countries.includes(item.Country) && item.Country !== 'Chile'){
-                            countries.push(item.Country)
-                        }
-                    })
-                    countries.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item;
-                        option.innerText = item;
-                        option.id = 'country-' + item;
-                        countriesSelection.appendChild(option);
-                    });
-                    setup(country)
-                }
-            },
-        });
+        loadTranslations(lang, () => {
+            Papa.parse('https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv', {
+                encodingg: 'utf8',
+                download: true,
+                header: true,
+                delimiter: ',',
+                complete: (results, file) => {
+                    if(results.data){
+                        allData = results.data.filter(item => item.Country !== undefined);
+                        const countries = []
+                        allData.forEach(item => {
+                            if(!countries.includes(item.Country) && item.Country !== 'Chile'){
+                                countries.push(item.Country)
+                            }
+                        })
+                        countries.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item;
+                            option.innerText = item;
+                            option.id = 'country-' + item;
+                            countriesSelection.appendChild(option);
+                        });
+                        setup(country)
+                    }
+                },
+            });
+        })
     </script>
 </body>
 </html>
