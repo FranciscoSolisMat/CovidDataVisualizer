@@ -100,7 +100,7 @@
         const loadTranslations = (lang, callback) => {
             axios.get('i18n/' + lang + '.json').then(res => {
                 window.translations = res.data;
-                window.title = window.translations['title']
+                document.title = window.translations['title']
                 // Retrieve all elements that contains the attribute 'translation'
                 let elements = document.querySelectorAll('[translation]');
                 // Loop through all elements
