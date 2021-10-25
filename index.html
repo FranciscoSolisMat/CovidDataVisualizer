@@ -99,23 +99,23 @@
         const loadTranslations = (lang) => {
             axios.get('i18n/' + lang + '.json').then(res => {
                 window.translations = res.data;
+                window.title = window.translations['title']
+                // Retrieve all elements that contains the attribute 'translation'
+                let elements = document.querySelectorAll('[translation]');
+                // Loop through all elements
+                for (let i = 0; i < elements.length; i++) {
+                    // Get the value of the attribute 'translation'
+                    let translation = elements[i].getAttribute('translation');
+                    // Get the translation from the window.translations object
+                    let translationValue = window.translations[translation];
+                    // If the translation exists, replace the content of the element with the translation
+                    if (translationValue) {
+                        elements[i].innerText = translationValue;
+                    }
+                }
             }).catch(err => {
                 loadTranslations('en');
             });
-            window.title = window.translations['title']
-            // Retrieve all elements that contains the attribute 'translation'
-            let elements = document.querySelectorAll('[translation]');
-            // Loop through all elements
-            for (let i = 0; i < elements.length; i++) {
-                // Get the value of the attribute 'translation'
-                let translation = elements[i].getAttribute('translation');
-                // Get the translation from the window.translations object
-                let translationValue = window.translations[translation];
-                // If the translation exists, replace the content of the element with the translation
-                if (translationValue) {
-                    elements[i].innerText = translationValue;
-                }
-            }
         }
 
         loadTranslations(lang);
