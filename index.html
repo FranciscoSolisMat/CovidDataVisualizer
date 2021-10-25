@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+    <script src="https://unpkg.com/papaparse@5.3.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>Covid 19 Data Viewer</title>
+</head>
+<body class="bg-gray-600" id="app">
+    <!-- Nav -->
+    <div class="bg-indigo-600 flex">
+        <div class="flex justify-between container mx-auto py-2">
+            <h1 class="text-white text-2xl flex items-center font-semibold"><img src="https://i.imgur.com/1ymXrSi.png" class="w-12 h-12" alt="Logo White">&nbsp;FranciscoSolis</h1>
+            <h1 class="text-white text-2xl flex items-center font-semibold">{{ window.translations['title'] }}</h1>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="min-h-screen">
+        <div class="container mx-auto">
+            <div class="flex flex-wrap justify-center">
+                <div class="flex justify-center w-full items-center my-5">
+                    <select id="countries">
+                        <option value="Chile" id="country-Chile">Chile</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-5 w-full p-4">
+                    <!-- Cases -->
+                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                        <h1 class="text-2xl text-indigo-600 text-center font-semibold">{{ window.translations['last-10-days-cases'] }}</h1>
+                        <div class="flex justify-center" id="chart-container-cases">
+                            <canvas id="chart-cases"></canvas>
+                        </div>
+                        <div class="flex justify-between items-center mt-5">
+                            <div class="flex flex-row items-center text-md">
+                                {{ window.translations['yesterday-cases'] }}:&nbsp;<span class="text-green-600" id="cases">?</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Deaths -->
+                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                        <h1 class="text-2xl text-indigo-600 text-center font-semibold">{{ window.translations['last-10-days-deaths'] }}</h1>
+                        <div class="flex justify-center" id="chart-container-deaths">
+                            <canvas id="chart-deaths"></canvas>
+                        </div>
+                        <div class="flex justify-between items-center mt-5">
+                            <div class="flex flex-row items-center text-md">
+                                {{ window.translations['recovered-deaths'] }}:&nbsp;<span class="text-red-600" id="deaths">?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-4 gap-5 w-full p-4">
+                    <div class="col-span-1"></div>
+                    <!-- Recovered -->
+                    <div class="bg-white col-span-2 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                        <h1 class="text-2xl text-indigo-600 text-center font-semibold">{{ window.translations['last-10-days-recovered'] }}</h1>
+                        <div class="flex justify-center" id="chart-container-recovered">
+                            <canvas id="chart-recovered"></canvas>
+                        </div>
+                        <div class="flex justify-between items-center mt-5">
+                            <div class="flex flex-row items-center text-md">
+                                {{ window.translations['yesterday-recovered'] }}:&nbsp;<span class="text-green-600" id="recovered">?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-indigo-600 flex">
+        <div class="flex justify-between items-center container mx-auto py-2">
+            <span class="text-white text-md flex items-center font-semibold">&copy;FranciscoSolis</span>
+            <span class="text-white text-md flex items-center font-semibold">{{ window.translations['data-taken'] }}&nbsp;<a class="text-red-300 hover:underline" href="https://github.com/datasets/covid-19" target="_blank">GitHub</a></span>
+        </div>
+    </div>
+
+    <script>
+        let urlOptions = new URLSearchParams(window.location.search);
+        let country = urlOptions.get('country') || 'Chile';
+        let lang = urlOptions.get('lang') || 'en';
+
+        let allData = [];
+        let countriesSelection = document.getElementById('countries');
+
+        countriesSelection.onchange = () => {
+            setup(countriesSelection.value);
+        }
+        const loadTranslations = (lang) => {
+            axios.get('i18n/' + lang + '.json').then(res => {
+                window.translations = res.data;
+            }).catch(err => {
+                loadTranslations('en');
+            });
+        }
+
+        loadTranslations(lang);
+
+        new Vue({
+            el: '#app'
+        })
+
+        const setup = (country) => {
+            countriesSelection.disabled = true;
+            let covidData = {
+                yesterdaysData: {
+                    confirmed: 0,
+                    deaths: 0,
+                    recovered: 0
+                },
+
+                total: {
+                    confirmed: 0,
+                    deaths: 0,
+                    recovered: 0
+                },
+
+                last10Days: [],
+            };
+
+            // Get current date with format MM-DD-YYYY
+            let now = new Date();
+            let yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+            let beforeYesterday = new Date(now.getTime() - (48 * 60 * 60 * 1000));
+            // Format to YYYY-MM-DD
+            let yesterdayString = yesterday.getFullYear() + '-' + (yesterday.getMonth() + 1) + '-' + yesterday.getDate();
+            let beforeYesterdayString = beforeYesterday.getFullYear() + '-' + (beforeYesterday.getMonth() + 1) + '-' + beforeYesterday.getDate();
+
+            let data = allData.filter(item => item.Country === country)
+            window.data = data
+
+            let yesterdaysData = data.find(item => item.Date === yesterdayString);
+            let beforeYesterdaysData = data.find(item => item.Date === beforeYesterdayString);
+
+            covidData.total.confirmed = parseInt(yesterdaysData.Confirmed);
+            covidData.total.deaths = parseInt(yesterdaysData.Deaths);
+            covidData.total.recovered = parseInt(yesterdaysData.Recovered);
+
+            // Store in covidData.yesterdaysData.confirmed, etc the difference between yesterday and before yesterday
+            covidData.yesterdaysData.confirmed = parseInt(yesterdaysData.Confirmed) - parseInt(beforeYesterdaysData.Confirmed);
+            covidData.yesterdaysData.deaths = parseInt(yesterdaysData.Deaths) - parseInt(beforeYesterdaysData.Deaths);
+            covidData.yesterdaysData.recovered = parseInt(yesterdaysData.Recovered) - parseInt(beforeYesterdaysData.Recovered);
+
+            // Get last 10 days data
+            for (let i = 1; i < 11; i++) {
+                let date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+                let dateBefore = new Date(now.getTime() - ((i + 1) * 24 * 60 * 60 * 1000));
+                let dateString = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+                let dateBeforeString = dateBefore.getFullYear() + '-' + (dateBefore.getMonth() + 1) + '-' + dateBefore.getDate();
+                let dayData = data.find(item => item.Date === dateString);
+                let dayDataBefore = data.find(item => item.Date === dateBeforeString) || { Confirmed: 0, Deaths: 0, Recovered: 0 };
+                covidData.last10Days.push({
+                    label: dateString,
+                    confirmed: Math.abs(parseInt(dayData.Confirmed) - parseInt(dayDataBefore.Confirmed)),
+                    cumulativeConfirmed: parseInt(dayData.Confirmed),
+                    deaths: Math.abs(parseInt(dayData.Deaths) - parseInt(dayDataBefore.Deaths)),
+                    cumulativeDeaths: parseInt(dayData.Deaths),
+                    recovered: Math.abs(parseInt(dayData.Recovered) - parseInt(dayDataBefore.Recovered)),
+                    cumulativeRecovered: parseInt(dayData.Recovered)
+                });
+            }
+
+            covidData.last10Days = covidData.last10Days.reverse();
+
+            window.covidData = covidData;
+
+            document.getElementById('deaths').innerText = covidData.yesterdaysData.deaths;
+            document.getElementById('cases').innerText = covidData.yesterdaysData.confirmed;
+            document.getElementById('recovered').innerText = covidData.yesterdaysData.recovered;
+
+            ['cases', 'deaths', 'recovered'].forEach(item => {
+                document.getElementById('chart-' + item).remove();
+                const chartContainer = document.getElementById('chart-container-' + item);
+                const chart = document.createElement('canvas');
+                chart.id = 'chart-' + item;
+                chartContainer.appendChild(chart);
+            })
+            window.chartCases = new Chart(document.getElementById('chart-cases').getContext('2d'), {
+                data: {
+                    labels: covidData.last10Days.map(item => item.label),
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: window.translations['cumulative-cases'],
+                            data: covidData.last10Days.map(item => item.cumulativeConfirmed),
+                            backgroundColor: 'rgba(82, 113, 255, 0.2)',
+                            borderColor: 'rgba(82, 113, 255, 1)',
+                        },
+                        {
+                            type: 'line',
+                            label: window.translations['cases-per-day'],
+                            data: covidData.last10Days.map(item => item.confirmed),
+                            backgroundColor: 'rgba(82, 113, 255, 0.2)',
+                            borderColor: 'rgba(82, 113, 255, 1)',
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            window.chartCases.hide(0)
+
+            window.chartDeaths = new Chart(document.getElementById('chart-deaths').getContext('2d'), {
+                data: {
+                    labels: covidData.last10Days.map(item => item.label),
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: window.translations['cumulative-deaths'],
+                            data: covidData.last10Days.map(item => item.cumulativeDeaths),
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                        },
+                        {
+                            type: 'line',
+                            label: window.translations['deaths-per-day'],
+                            data: covidData.last10Days.map(item => item.deaths),
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            })
+            window.chartDeaths.hide(0)
+
+            window.chartRecovered = new Chart(document.getElementById('chart-recovered').getContext('2d'), {
+                data: {
+                    labels: covidData.last10Days.map(item => item.label),
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: window.translations['cumulative-recovered'],
+                            data: covidData.last10Days.map(item => item.cumulativeRecovered),
+                            backgroundColor: 'rgba(81, 255, 116, 0.2)',
+                            borderColor: 'rgba(81, 255, 116, 1)',
+                        },
+                        {
+                            type: 'line',
+                            label: window.translations['recovered-per-day'],
+                            data: covidData.last10Days.map(item => item.recovered),
+                            backgroundColor: 'rgba(81, 255, 116, 0.2)',
+                            borderColor: 'rgba(81, 255, 116, 1)',
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            })
+            window.chartRecovered.hide(0)
+
+            countriesSelection.disabled = false;
+        };     
+
+        Papa.parse('https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv', {
+            encodingg: 'utf8',
+            download: true,
+            header: true,
+            delimiter: ',',
+            complete: (results, file) => {
+                if(results.data){
+                    allData = results.data.filter(item => item.Country !== undefined);
+                    const countries = []
+                    allData.forEach(item => {
+                        if(!countries.includes(item.Country) && item.Country !== 'Chile'){
+                            countries.push(item.Country)
+                        }
+                    })
+                    countries.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.innerText = item;
+                        option.id = 'country-' + item;
+                        countriesSelection.appendChild(option);
+                    });
+                    setup(country)
+                }
+            },
+        });
+    </script>
+</body>
+</html>

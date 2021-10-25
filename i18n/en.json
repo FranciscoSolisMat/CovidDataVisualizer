@@ -1,0 +1,16 @@
+{
+    "title": "COVID-19 Data Viewer",
+    "data-taken": "Data taken from",
+    "last-10-days-cases": "Last 10 days cases",
+    "last-10-days-deaths": "Last 10 days deaths",
+    "last-10-days-recovered": "Last 10 days recovered",
+    "yesterday-cases": "Yesterday cases",
+    "yesterday-deaths": "Yesterday deaths",
+    "yesterday-recovered": "Yesterday recovered",
+    "cumulative-cases": "Cumulative cases",
+    "cumulative-deaths": "Cumulative deaths",
+    "cumulative-recovered": "Cumulative recovered",
+    "cases-per-day": "Cases per day",
+    "deaths-per-day": "Deaths per day",
+    "recovered-per-day": "Recovered per day"
+}
