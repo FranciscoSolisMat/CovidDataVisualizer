@@ -11,16 +11,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/papaparse@5.3.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <title>Covid 19 Data Viewer</title>
+    <title>COVID-19</title>
 </head>
 <body class="bg-gray-600" id="app">
     <!-- Nav -->
     <div class="bg-indigo-600 flex">
         <div class="flex justify-between container mx-auto py-2">
             <h1 class="text-white text-2xl flex items-center font-semibold"><img src="https://i.imgur.com/1ymXrSi.png" class="w-12 h-12" alt="Logo White">&nbsp;FranciscoSolis</h1>
-            <h1 class="text-white text-2xl flex items-center font-semibold">{{ window.translations['title'] }}</h1>
+            <h1 class="text-white text-2xl flex items-center font-semibold" translation="title"></h1>
         </div>
     </div>
 
@@ -36,25 +35,25 @@
                 <div class="grid grid-cols-2 gap-5 w-full p-4">
                     <!-- Cases -->
                     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                        <h1 class="text-2xl text-indigo-600 text-center font-semibold">{{ window.translations['last-10-days-cases'] }}</h1>
+                        <h1 class="text-2xl text-indigo-600 text-center font-semibold" translation="last-10-days-cases"></h1>
                         <div class="flex justify-center" id="chart-container-cases">
                             <canvas id="chart-cases"></canvas>
                         </div>
                         <div class="flex justify-between items-center mt-5">
                             <div class="flex flex-row items-center text-md">
-                                {{ window.translations['yesterday-cases'] }}:&nbsp;<span class="text-green-600" id="cases">?</span>
+                                <span translation="yesterday-cases"></span>:&nbsp;<span class="text-green-600" id="cases">?</span>
                             </div>
                         </div>
                     </div>
                     <!-- Deaths -->
                     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                        <h1 class="text-2xl text-indigo-600 text-center font-semibold">{{ window.translations['last-10-days-deaths'] }}</h1>
+                        <h1 class="text-2xl text-indigo-600 text-center font-semibold" translation="last-10-days-deaths"></h1>
                         <div class="flex justify-center" id="chart-container-deaths">
                             <canvas id="chart-deaths"></canvas>
                         </div>
                         <div class="flex justify-between items-center mt-5">
                             <div class="flex flex-row items-center text-md">
-                                {{ window.translations['recovered-deaths'] }}:&nbsp;<span class="text-red-600" id="deaths">?</span>
+                                <span translation="recovered-deaths"></span>:&nbsp;<span class="text-red-600" id="deaths">?</span>
                             </div>
                         </div>
                     </div>
@@ -63,13 +62,13 @@
                     <div class="col-span-1"></div>
                     <!-- Recovered -->
                     <div class="bg-white col-span-2 shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                        <h1 class="text-2xl text-indigo-600 text-center font-semibold">{{ window.translations['last-10-days-recovered'] }}</h1>
+                        <h1 class="text-2xl text-indigo-600 text-center font-semibold" translation="last-10-days-recovered"></h1>
                         <div class="flex justify-center" id="chart-container-recovered">
                             <canvas id="chart-recovered"></canvas>
                         </div>
                         <div class="flex justify-between items-center mt-5">
                             <div class="flex flex-row items-center text-md">
-                                {{ window.translations['yesterday-recovered'] }}:&nbsp;<span class="text-green-600" id="recovered">?</span>
+                                <span translation="yesterday-recovered"></span>&nbsp;<span class="text-green-600" id="recovered">?</span>
                             </div>
                         </div>
                     </div>
@@ -82,7 +81,7 @@
     <div class="bg-indigo-600 flex">
         <div class="flex justify-between items-center container mx-auto py-2">
             <span class="text-white text-md flex items-center font-semibold">&copy;FranciscoSolis</span>
-            <span class="text-white text-md flex items-center font-semibold">{{ window.translations['data-taken'] }}&nbsp;<a class="text-red-300 hover:underline" href="https://github.com/datasets/covid-19" target="_blank">GitHub</a></span>
+            <span class="text-white text-md flex items-center font-semibold"><span translation="data-taken'"></span>&nbsp;<a class="text-red-300 hover:underline" href="https://github.com/datasets/covid-19" target="_blank">GitHub</a></span>
         </div>
     </div>
 
@@ -103,13 +102,23 @@
             }).catch(err => {
                 loadTranslations('en');
             });
+            window.title = window.translations['title']
+            // Retrieve all elements that contains the attribute 'translation'
+            let elements = document.querySelectorAll('[translation]');
+            // Loop through all elements
+            for (let i = 0; i < elements.length; i++) {
+                // Get the value of the attribute 'translation'
+                let translation = elements[i].getAttribute('translation');
+                // Get the translation from the window.translations object
+                let translationValue = window.translations[translation];
+                // If the translation exists, replace the content of the element with the translation
+                if (translationValue) {
+                    elements[i].innerText = translationValue;
+                }
+            }
         }
 
         loadTranslations(lang);
-
-        new Vue({
-            el: '#app'
-        })
 
         const setup = (country) => {
             countriesSelection.disabled = true;
