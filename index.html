@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/papaparse@5.3.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/zts9uoM.png">
     <title>COVID-19</title>
 </head>
 <body class="bg-gray-600" id="app">
@@ -117,7 +118,7 @@
                     callback()
                 }
             }).catch(err => {
-                loadTranslations('en'); 
+                loadTranslations('en', callback); 
             });
         }
 
