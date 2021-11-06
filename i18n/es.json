@@ -12,5 +12,11 @@
     "cumulative-recovered": "Recuperados acumulados",
     "cases-per-day": "Casos por día",
     "deaths-per-day": "Fallecidos por día",
-    "recovered-per-day": "Recuperados por día"
+    "recovered-per-day": "Recuperados por día",
+    "transmission-level": "Nivel de transmisión",
+    "low": "Bajo",
+    "moderate": "Moderado",
+    "substantial": "Sustancial",
+    "high": "Alto",
+    "select-country": "Seleccione un país..."
 }

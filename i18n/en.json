@@ -12,5 +12,11 @@
     "cumulative-recovered": "Cumulative recovered",
     "cases-per-day": "Cases per day",
     "deaths-per-day": "Deaths per day",
-    "recovered-per-day": "Recovered per day"
+    "recovered-per-day": "Recovered per day",
+    "transmission-level": "Transmission level",
+    "low": "Low",
+    "moderate": "Moderate",
+    "substantial": "Substantial",
+    "high": "High",
+    "select-country": "Select a country..."
 }
