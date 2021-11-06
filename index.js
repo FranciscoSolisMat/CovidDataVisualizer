@@ -197,46 +197,67 @@ const setup = (country) => {
     window.chartRecovered.hide(0)
 
     countriesSelection.disabled = false;
-
-    let transmissionLevelCount = (covidData.yesterdaysData.confirmed / 19336724) * 100000;
-    const setupTransmissionLevel = (transmissionLevel, color) => {document.getElementById('transmission-level').innerText = window.translations[transmissionLevel].toUpperCase();document.getElementById('transmission-level-color').style.backgroundColor = color;document.getElementById('transmission-level-color').classList.remove('hidden');}
-    if(transmissionLevelCount >= 0 && transmissionLevelCount <= 9.99) {
-        setupTransmissionLevel('low', '#1d8aff')
-    }else if(transmissionLevelCount >= 10 && transmissionLevelCount <= 49.99) {
-        setupTransmissionLevel('moderate', '#fff70e')
-    }else if(transmissionLevelCount >= 50 && transmissionLevelCount <= 99.99) {
-        setupTransmissionLevel('substantial', '#ff7134')
-    }else if(transmissionLevelCount >= 100) {
-        setupTransmissionLevel('high', '#ff0000')
-    }
-
     document.getElementById('country-' + country).selected = true
+
+    let population = window.population.find(item => item.country === country);
+    if (population) {
+        let transmissionLevelCount = (covidData.yesterdaysData.confirmed / population.population) * 100000;
+        const setupTransmissionLevel = (transmissionLevel, color) => { document.getElementById('transmission-level').innerText = window.translations[transmissionLevel].toUpperCase(); document.getElementById('transmission-level-color').style.backgroundColor = color; document.getElementById('transmission-level-color').classList.remove('hidden'); }
+        if (transmissionLevelCount >= 0 && transmissionLevelCount <= 9.99) {
+            setupTransmissionLevel('low', '#1d8aff')
+        } else if (transmissionLevelCount >= 10 && transmissionLevelCount <= 49.99) {
+            setupTransmissionLevel('moderate', '#fff70e')
+        } else if (transmissionLevelCount >= 50 && transmissionLevelCount <= 99.99) {
+            setupTransmissionLevel('substantial', '#ff7134')
+        } else if (transmissionLevelCount >= 100) {
+            setupTransmissionLevel('high', '#ff0000')
+        }
+    }
 };
 
 loadTranslations(langParameter, () => {
-    Papa.parse('https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv', {
+    Papa.parse('https://raw.githubusercontent.com/datasets/population/master/data/population.csv', {
         download: true,
         header: true,
-        complete: (covidResults, file) => {
-            if (covidResults.data) {
-                allData = covidResults.data.filter(item => item.Country !== undefined);
-                const countries = []
-                allData.forEach(item => {
-                    if (!countries.includes(item.Country)) {
-                        countries.push(item.Country)
+        complete: (results) => {
+            if (results.data) {
+                let population = []
+                let year = '2018'
+                for (let data of results.data) {
+                    if (!population.find(item => item['Country Name'] === data['Country Name']) && data['Year'] === year) {
+                        population.push({
+                            country: data['Country Name'],
+                            population: data['Value']
+                        })
                     }
-                })
-                countries.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    option.innerText = item;
-                    option.id = 'country-' + item;
-                    countriesSelection.appendChild(option);
-                });
-                if(countries.find(item => item === countryParameter)) {
-                    setup(countryParameter)
                 }
+                window.population = population
+                Papa.parse('https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv', {
+                    download: true,
+                    header: true,
+                    complete: (covidResults, file) => {
+                        if (covidResults.data) {
+                            allData = covidResults.data.filter(item => item.Country !== undefined);
+                            const countries = []
+                            allData.forEach(item => {
+                                if (!countries.includes(item.Country)) {
+                                    countries.push(item.Country)
+                                }
+                            })
+                            countries.forEach(item => {
+                                const option = document.createElement('option');
+                                option.value = item;
+                                option.innerText = item;
+                                option.id = 'country-' + item;
+                                countriesSelection.appendChild(option);
+                            });
+                            if (countries.find(item => item === countryParameter)) {
+                                setup(countryParameter)
+                            }
+                        }
+                    },
+                });
             }
         },
-    });
+    })
 })
