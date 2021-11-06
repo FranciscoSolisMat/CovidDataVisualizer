@@ -18,8 +18,8 @@
 <body class="bg-gray-600" id="app">
     <!-- Nav -->
     <div class="bg-indigo-600 flex">
-        <div class="flex justify-between container mx-auto py-2">
-            <h1 class="text-white text-2xl flex items-center font-semibold"><img src="https://i.imgur.com/1ymXrSi.png" class="w-12 h-12" alt="Logo White">&nbsp;FranciscoSolis</h1>
+        <div class="md:flex md:justify-between container mx-auto py-2">
+            <h1 class="text-white text-2xl flex items-center font-semibold"><img src="https://i.imgur.com/1ymXrSi.png" class="w-12 h-12 hidden md:block md:mr-2" alt="Logo White">FranciscoSolis</h1>
             <h1 class="text-white text-2xl flex items-center font-semibold" translation="title"></h1>
         </div>
     </div>
@@ -40,42 +40,42 @@
                     </div>
                     <div></div>
                 </div>
-                <div class="grid sm:grid-cols-1 md:grid-cols-2 gap-5 w-full p-4">
+                <div class="grid sm:grid-cols-1 md:grid-cols-2 md:gap-5 w-full p-4">
                     <!-- Cases -->
-                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    <div class="bg-white shadow-md rounded md:px-8 pt-6 pb-8 mb-4">
                         <h1 class="text-2xl text-indigo-600 text-center font-semibold" translation="last-10-days-cases"></h1>
                         <div class="flex justify-center" id="chart-container-cases">
                             <canvas id="chart-cases"></canvas>
                         </div>
                         <div class="flex justify-between items-center mt-5">
-                            <div class="flex flex-row items-center text-md">
+                            <div class="flex flex-row items-center text-md mx-5">
                                 <span translation="yesterday-cases"></span>:&nbsp;<span class="text-green-600" id="cases">?</span>
                             </div>
                         </div>
                     </div>
                     <!-- Deaths -->
-                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    <div class="bg-white shadow-md rounded md:px-8 pt-6 pb-8 mb-4">
                         <h1 class="text-2xl text-indigo-600 text-center font-semibold" translation="last-10-days-deaths"></h1>
                         <div class="flex justify-center" id="chart-container-deaths">
                             <canvas id="chart-deaths"></canvas>
                         </div>
                         <div class="flex justify-between items-center mt-5">
-                            <div class="flex flex-row items-center text-md">
+                            <div class="flex flex-row items-center text-md mx-5">
                                 <span translation="yesterday-deaths"></span>:&nbsp;<span class="text-red-600" id="deaths">?</span>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="grid sm:grid-cols-1 md:grid-cols-4 gap-5 w-full p-4">
+                <div class="grid sm:grid-cols-1 md:grid-cols-4 md:gap-5 w-full p-4">
                     <div class="col-span-1"></div>
                     <!-- Recovered -->
-                    <div class="bg-white col-span-2 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    <div class="bg-white col-span-2 shadow-md rounded md:px-8 pt-6 pb-8 mb-4">
                         <h1 class="text-2xl text-indigo-600 text-center font-semibold" translation="last-10-days-recovered"></h1>
                         <div class="flex justify-center" id="chart-container-recovered">
                             <canvas id="chart-recovered"></canvas>
                         </div>
                         <div class="flex justify-between items-center mt-5">
-                            <div class="flex flex-row items-center text-md">
+                            <div class="flex flex-row items-center text-md mx-5">
                                 <span translation="yesterday-recovered"></span>&nbsp;<span class="text-green-600" id="recovered">?</span>
                             </div>
                         </div>
